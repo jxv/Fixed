@@ -15,7 +15,7 @@ public:
   : head(0)
   , sz(0)
   {}
-  FixedDeque(const Fixed_deque<A, cap>& d)
+  FixedDeque(const FixedDeque<A, cap>& d)
   : head(0)
   , sz(d.sz)
   {
