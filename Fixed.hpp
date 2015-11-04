@@ -132,6 +132,158 @@ public:
     bool full() const { return arr.full(); }
 };
 
+template <typename A, size_t cap>
+class List {
+
+    struct Node {
+        Node *prev;
+        Node *next;
+        A value;
+        size_t idx;
+        Node()
+        : prev(nullptr)
+        , next(nullptr)
+        , idx(0)
+        {}
+        Node(A a, size_t idx = 0)
+        : prev(nullptr)
+        , next(nullptr)
+        , value(a)
+        , idx(idx)
+        {}
+   };
+
+    Node *head;
+    Node *tail;
+    Stack<size_t, cap> unused;
+    std::array<Node, cap> nodes;
+public:
+    List()
+    {
+        clear();
+    }
+    List(const List<A, cap>& d)
+    : head(0)
+    , sz(d.sz)
+    {
+        for (auto i = 0; i < sz; i++) {
+            arr[i] = d.arr[i];
+        }
+    }
+    void clear() {
+        head = nullptr;
+        unused.clear();
+        auto i = 0;
+        while (!unused.full()) {
+            unused.push_back(i);
+            ++i;
+        }
+    }
+    void push_front(A a) {
+        assert(size() < cap);
+        auto idx = unused.back();
+        if (!head) {
+            head = &nodes[idx];
+            tail = head;
+            *head = Node(a, idx);
+            unused.pop_back();
+            return;
+        }
+        head->prev = &nodes[idx];
+        unused.pop_back();
+        head->prev->next = head;
+        head = head->prev;
+        *head = Node(a, idx);
+    }
+    void pop_front() {
+        assert(size() > 0);
+        unused.push_back(head->idx);
+        if (head == tail) {
+            head = nullptr;
+            tail = nullptr;
+            return;
+        }
+        head = head->next;
+        head->prev = nullptr;
+    }
+    void push_back(A a) {
+        assert(size() < cap);
+        auto idx = unused.back();
+        if (!head) {
+            head = &nodes[idx];
+            tail = head;
+            *head = Node(a, idx);
+            unused.pop_back();
+            return;
+        }
+        tail->next = &nodes[idx];
+        unused.pop_back();
+        tail->next->prev = tail;
+        tail = tail->next;
+        *head = Node(a, idx);
+    }
+    void pop_back() {
+        assert(size() > 0);
+        unused.push_back(tail->idx);
+        if (head == tail) {
+            head = nullptr;
+            tail = nullptr;
+            return;
+        }
+        tail = tail->next;
+        tail->next = nullptr;
+    }
+    A& at(size_t idx) {
+        if (idx >= 0 && idx < size()) {
+            throw std::out_of_range("Out of range, at");
+        }
+        return get(idx);
+    }
+    const A& at(size_t idx) const {
+        A& val = at(idx);
+        return val;
+    }
+    A& operator[](size_t idx) { return get(idx); }
+    const A& operator[](size_t idx) const { return get(idx); }
+    A& front() {
+        assert(size() > 0);
+        return head->value;
+    }
+    const A& front() const {
+        A& val = front();
+        return val;
+    }
+    A& back() {
+        assert(size() > 0);
+        return tail->value;
+    }
+    const A& back() const {
+        A& val = back();
+        return val;
+    }
+    size_t capacity() const { return cap; }
+    size_t size() const { return cap - unused.size(); }
+    bool empty() const { return unused.size() == cap; }
+    bool full() const { return unused.size() == 0; }
+private:
+    A& get(size_t idx) {
+        assert(idx >= 0 && idx < size());
+        if (idx < size() / 2) {
+            auto node = head;
+            for (auto i = 0; i < idx; node = node->next, ++i) {}
+            return node->value;
+        } else {
+            auto node = tail;
+            for (auto i = size() - 1; i > idx; node = node->prev, --i) {}
+            return node->value;
+        }
+    }
+    const A& get(size_t idx) const {
+        A& val = get(idx);
+        return val;
+    }
+};
+
 }
 
 #endif
