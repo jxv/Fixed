@@ -157,21 +157,16 @@ class List {
     Node *tail;
     Stack<size_t, cap> unused;
     std::array<Node, cap> nodes;
+    size_t sz;
 public:
     List()
     {
         clear();
     }
-    List(const List<A, cap>& d)
-    : head(0)
-    , sz(d.sz)
-    {
-        for (auto i = 0; i < sz; i++) {
-            arr[i] = d.arr[i];
-        }
-    }
     void clear() {
         head = nullptr;
+        tail = nullptr;
+        sz = 0;
         unused.clear();
         auto i = 0;
         while (!unused.full()) {
@@ -180,7 +175,8 @@ public:
         }
     }
     void push_front(A a) {
-        assert(size() < cap);
+        assert(sz < cap);
+        ++sz;
         auto idx = unused.back();
         if (!head) {
             head = &nodes[idx];
@@ -196,7 +192,8 @@ public:
         *head = Node(a, idx);
     }
     void pop_front() {
-        assert(size() > 0);
+        assert(sz > 0);
+        --sz;
         unused.push_back(head->idx);
         if (head == tail) {
             head = nullptr;
@@ -207,7 +204,8 @@ public:
         head->prev = nullptr;
     }
     void push_back(A a) {
-        assert(size() < cap);
+        assert(sz < cap);
+        ++sz;
         auto idx = unused.back();
         if (!head) {
             head = &nodes[idx];
@@ -223,7 +221,8 @@ public:
         *head = Node(a, idx);
     }
     void pop_back() {
-        assert(size() > 0);
+        assert(sz > 0);
+        --sz;
         unused.push_back(tail->idx);
         if (head == tail) {
             head = nullptr;
@@ -234,7 +233,7 @@ public:
         tail->next = nullptr;
     }
     A& at(size_t idx) {
-        if (idx >= 0 && idx < size()) {
+        if (idx >= 0 && idx < sz) {
             throw std::out_of_range("Out of range, at");
         }
         return get(idx);
@@ -246,7 +245,7 @@ public:
     A& operator[](size_t idx) { return get(idx); }
     const A& operator[](size_t idx) const { return get(idx); }
     A& front() {
-        assert(size() > 0);
+        assert(sz > 0);
         return head->value;
     }
     const A& front() const {
@@ -254,7 +253,7 @@ public:
         return val;
     }
     A& back() {
-        assert(size() > 0);
+        assert(sz > 0);
         return tail->value;
     }
     const A& back() const {
@@ -262,19 +261,19 @@ public:
         return val;
     }
     size_t capacity() const { return cap; }
-    size_t size() const { return cap - unused.size(); }
-    bool empty() const { return unused.size() == cap; }
-    bool full() const { return unused.size() == 0; }
+    size_t size() const { return sz; }
+    bool empty() const { return sz == 0; }
+    bool full() const { return sz == cap; }
 private:
     A& get(size_t idx) {
-        assert(idx >= 0 && idx < size());
-        if (idx < size() / 2) {
+        assert(idx >= 0 && idx < sz);
+        if (idx < sz / 2) {
             auto node = head;
             for (auto i = 0; i < idx; node = node->next, ++i) {}
             return node->value;
         } else {
             auto node = tail;
-            for (auto i = size() - 1; i > idx; node = node->prev, --i) {}
+            for (auto i = sz - 1; i > idx; node = node->prev, --i) {}
             return node->value;
         }
     }
