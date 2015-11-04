@@ -104,6 +104,8 @@ template <typename A, size_t cap>
 class Stack {
     Array<A, cap> arr;
 public:
+    Stack() {}
+    Stack(Stack &s) : arr(s.arr) {}
     void clear() { arr.clear(); }
     void push_back(A a) { arr.push_back(a); }
     void pop_back() { arr.pop_back(); }
@@ -119,6 +121,8 @@ template <typename A, size_t cap>
 class Queue {
     Array<A, cap> arr;
 public:
+    Queue() {}
+    Queue(Queue &q) : arr(q.arr) {}
     void clear() { arr.clear(); }
     void push_back(A a) { arr.push_back(a); }
     void pop_front() { arr.pop_front(); }
@@ -162,6 +166,24 @@ public:
     List()
     {
         clear();
+    }
+    List(const List<A, cap>& m)
+    : unused(m.unused)
+    {
+        sz = m.sz;
+       if (m.head) {
+            head = &nodes[m.head->idx];
+            tail = &nodes[m.tail->idx];
+       } else {
+            head = nullptr;
+            tail = nullptr;
+       }
+       for (auto i = 0; i < cap; i++) {
+            nodes[i].idx = m.nodes[i].idx;
+            nodes[i].prev = &nodes[m.nodes[i].prev->idx];
+            nodes[i].next = &nodes[m.nodes[i].next->idx];
+            nodes[i].value = m.nodes[i].value;
+        }
     }
     void clear() {
         head = nullptr;
