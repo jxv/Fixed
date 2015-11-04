@@ -5,17 +5,19 @@
 #include <exception>
 #include <array>
 
+namespace Fixed {
+
 template <typename A, size_t cap>
-class FixedArray {
+class Array {
     size_t head;
     size_t sz;
     std::array<A, cap> arr;
 public:
-    FixedArray()
+    Array()
     : head(0)
     , sz(0)
     {}
-    FixedArray(const FixedArray<A, cap>& d)
+    Array(const Array<A, cap>& d)
     : head(0)
     , sz(d.sz)
     {
@@ -99,8 +101,8 @@ private:
 };
 
 template <typename A, size_t cap>
-class FixedStack {
-    FixedArray<A, cap> arr;
+class Stack {
+    Array<A, cap> arr;
 public:
     void clear() { arr.clear(); }
     void push_back(A a) { arr.push_back(a); }
@@ -114,8 +116,8 @@ public:
 };
 
 template <typename A, size_t cap>
-class FixedQueue {
-    FixedArray<A, cap> arr;
+class Queue {
+    Array<A, cap> arr;
 public:
     void clear() { arr.clear(); }
     void push_back(A a) { arr.push_back(a); }
@@ -129,5 +131,7 @@ public:
     bool empty() const { return arr.empty(); }
     bool full() const { return arr.full(); }
 };
+
+}
 
 #endif
