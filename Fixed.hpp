@@ -56,28 +56,26 @@ public:
         return get(idx);
     }
     const A& at(size_t idx) const {
-        if (idx >= 0 && idx < sz) {
-            throw std::out_of_range("Out of range, at");
-        }
-        return get(idx);
+        A& val = at(idx);
+        return val;
     }
     A& operator[](size_t idx) { return get(idx); }
     const A& operator[](size_t idx) const { return get(idx); }
-        A& front() {
+    A& front() {
         assert(sz > 0);
         return arr[head];
     }
     const A& front() const {
-        assert(sz > 0);
-        return arr[head];
+        A& val = front();
+        return val;
     }
     A& back() {
         assert(sz > 0);
         return arr[(head + (sz - 1) + cap) % cap];
     }
     const A& back() const {
-        assert(sz > 0);
-        return arr[(head + (sz - 1) + cap) % cap];
+        A& val = back();
+        return val;
     }
     size_t capacity() const { return cap; }
     size_t size() const { return sz; }
@@ -89,8 +87,8 @@ private:
         return arr[(head + idx) % cap];
     }
     const A& get(size_t idx) const {
-        assert(idx >= 0 && idx < sz);
-        return arr[(head + idx) % cap];
+        A& val = get(idx);
+        return val;
     }
     void increment_head() {
         head = (head + 1) % cap;
@@ -303,6 +301,116 @@ private:
         A& val = get(idx);
         return val;
     }
+};
+
+template <typename A, size_t cap>
+class PriorityQueue {
+    
+    struct Node {
+        Node *prev;
+        Node *next;
+        A value;
+        size_t idx;
+        Node()
+        : prev(nullptr)
+        , next(nullptr)
+        , idx(0)
+        {}
+        Node(A a, size_t idx = 0)
+        : prev(nullptr)
+        , next(nullptr)
+        , value(a)
+        , idx(idx)
+        {}
+   };
+
+    Node *head;
+    Node *tail;
+    Stack<size_t, cap> unused;
+    std::array<Node, cap> nodes;
+    size_t sz;
+public:
+    PriorityQueue()
+    {
+        clear();
+    }
+    PriorityQueue(const PriorityQueue<A, cap>& m)
+    : unused(m.unused)
+    {
+        sz = m.sz;
+       if (m.head) {
+            head = &nodes[m.head->idx];
+            tail = &nodes[m.tail->idx];
+       } else {
+            head = nullptr;
+            tail = nullptr;
+       }
+       for (auto i = 0; i < cap; i++) {
+            nodes[i].idx = m.nodes[i].idx;
+            nodes[i].prev = &nodes[m.nodes[i].prev->idx];
+            nodes[i].next = &nodes[m.nodes[i].next->idx];
+            nodes[i].value = m.nodes[i].value;
+        }
+    }
+    void clear() {
+        head = nullptr;
+        tail = nullptr;
+        sz = 0;
+        unused.clear();
+        auto i = 0;
+        while (!unused.full()) {
+            unused.push_back(i);
+            ++i;
+        }
+    }
+    void pop_front() {
+        assert(sz > 0);
+        --sz;
+        unused.push_back(head->idx);
+        if (head == tail) {
+            head = nullptr;
+            tail = nullptr;
+            return;
+        }
+        head = head->next;
+        head->prev = nullptr;
+    }
+    void push_back(A a) {
+        assert(sz < cap);
+        ++sz;
+        auto idx = unused.back();
+        unused.pop_back();
+        if (!head) {
+            head = &nodes[idx];
+            tail = head;
+            *head = Node(a, idx);
+            return;
+        } else if (tail->value > a) {
+            nodes[idx] = Node(a, idx);
+            nodes[idx].prev = tail;
+            tail->next = &nodes[idx];
+        } else {
+            auto node = tail;
+            for (; node != head && a > node->value; node = node->prev) {}
+            nodes[idx] = Node(a, idx);
+            nodes[idx].prev = node->prev;
+            nodes[idx].next = node;
+            node->prev = &nodes[idx];
+        }
+    }
+    A& front() {
+        assert(sz > 0);
+        return head->value;
+    }
+    const A& front() const {
+        A& val = front();
+        return val;
+    }
+    size_t capacity() const { return cap; }
+    size_t size() const { return sz; }
+    bool empty() const { return sz == 0; }
+    bool full() const { return sz == cap; }
+
 };
 
 }
