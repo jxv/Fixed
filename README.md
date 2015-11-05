@@ -1,5 +1,4 @@
 # Fixed
 
 Common data structures with fixed size capacity.
-
-*\*Implemented with std::array.*
+*Implemented with std::array.*
